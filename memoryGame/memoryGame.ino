@@ -10,7 +10,7 @@ int knobPin = A0;
 int buttonPin = 2;
 
 bool playing = false;
-bool sequenceExists = true;
+bool sequenceExists = false;
 bool sequenceHasBeenShown = true;
 
 int prevButtonState = 0;
@@ -55,6 +55,7 @@ void playSequence() {
   
   RGB(255, 255, 255);
   delay(500);
+  RGB(0, 0, 0);
 }
 
 // Flashes green lights for winning
@@ -178,14 +179,6 @@ void loop() {
 
   while (playing) {
     if (!sequenceExists) {
-      //generateSequence();
-    }
-    else {
-      if (sequenceHasBeenShown == false) {
-        buttonState = digitalRead(buttonPin);
-        playSequence();
-        sequenceHasBeenShown = true;
-      }
       buttonState = digitalRead(buttonPin);
 
       if (buttonState = 1 && buttonState != prevButtonState) {
@@ -205,8 +198,21 @@ void loop() {
           prevButtonState = buttonState;
         }
         sequenceHasBeenShown = false;
+        sequenceExists = true;
+        prevButtonState = 0;
       }
-      print_sequence();
+    }
+    else {
+      if (sequenceHasBeenShown == false) {
+        buttonState = digitalRead(buttonPin);
+        if (buttonState == 1 && prevButtonState != buttonState) {
+          playSequence();
+          sequenceHasBeenShown = true;
+          sequenceExists = false;
+        }
+        prevButtonState = buttonState;
+      }
+      
 
       if (prevButtonState != buttonState) {
         prevButtonState = buttonState;
