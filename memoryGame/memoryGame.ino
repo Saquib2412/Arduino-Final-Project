@@ -112,11 +112,9 @@ void generateSequence() {
 
   while (!selected) {
     int state = digitalRead(buttonPin);
-    Serial.println(state);
     int knobValue = analogRead(knobPin);
         
     // Live view of colours while turning knob
-    
     
     if (state == 1 && state != prevState) {
       if (knobValue < 341) {
@@ -158,6 +156,29 @@ void generateSequence() {
   }
 }
 
+void createSequence() {
+  int buttonState = digitalRead(buttonPin);
+
+  if (buttonState == 1 && buttonState != prevButtonState) {
+    prevButtonState = buttonState;
+    while (sequenceIndex < 5) {
+      liveView();
+    
+      buttonState = digitalRead(buttonPin);
+
+      if (buttonState == 1 && buttonState != prevButtonState) {
+        generateSequence();  
+        RGB(0,0,0);
+        delay(500);
+        print_sequence();
+      }
+    
+      prevButtonState = buttonState;
+    }
+    
+  }
+}
+
 void setup() {
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
@@ -178,37 +199,21 @@ void loop() {
   }
 
   while (playing) {
+    //Serial.println(sequenceExists);
     if (!sequenceExists) {
-      buttonState = digitalRead(buttonPin);
-
-      if (buttonState = 1 && buttonState != prevButtonState) {
-        prevButtonState = buttonState;
-        while (sequenceIndex < 5) {
-          liveView();
-        
-          buttonState = digitalRead(buttonPin);
-
-          if (buttonState == 1 && buttonState != prevButtonState) {
-            generateSequence();  
-            RGB(0,0,0);
-            delay(500);
-            print_sequence();
-          }
-        
-          prevButtonState = buttonState;
-        }
-        sequenceHasBeenShown = false;
-        sequenceExists = true;
-        prevButtonState = 0;
-      }
+      createSequence();
+      sequenceHasBeenShown = false;
+      sequenceExists = true;
+      prevButtonState = 0;
     }
     else {
       if (sequenceHasBeenShown == false) {
         buttonState = digitalRead(buttonPin);
         if (buttonState == 1 && prevButtonState != buttonState) {
           playSequence();
-          sequenceHasBeenShown = true;
           sequenceExists = false;
+          sequenceHasBeenShown = true;
+          
         }
         prevButtonState = buttonState;
       }
