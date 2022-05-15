@@ -15,7 +15,7 @@ bool sequenceHasBeenShown = false;
 
 int prevButtonState = 0;
 int sequenceIndex = 0;
-int delayTime = 300;
+int delayTime = 500;
 
 int buzzer = 8;
 
@@ -90,6 +90,7 @@ void playLose() {
   }
 }
 
+// Live view of colours while turning knob
 void liveView() {
   int knobValue = analogRead(knobPin);
   if (knobValue < 341) {
@@ -113,8 +114,6 @@ void generateSequence() {
   while (!selected) {
     int state = digitalRead(buttonPin);
     int knobValue = analogRead(knobPin);
-        
-    // Live view of colours while turning knob
     
     if (state == 1 && state != prevState) {
       if (knobValue < 341) {
@@ -148,7 +147,6 @@ void generateSequence() {
         noTone(buzzer);
       }
     }
-
     sequence[sequenceIndex] = colorSelected;
     sequenceIndex++;
         
@@ -157,27 +155,22 @@ void generateSequence() {
 }
 
 void createSequence() {
-  int buttonState = digitalRead(buttonPin);
+  while (sequenceIndex < 5) {
+    liveView();
+  
+    int buttonState = digitalRead(buttonPin);
 
-  if (buttonState == 1 && buttonState != prevButtonState) {
-    prevButtonState = buttonState;
-    while (sequenceIndex < 5) {
-      liveView();
-    
-      buttonState = digitalRead(buttonPin);
-
-      if (buttonState == 1 && buttonState != prevButtonState) {
-        generateSequence();  
-        RGB(0,0,0);
-        delay(500);
-        print_sequence();
-      }
-    
-      prevButtonState = buttonState;
+    if (buttonState == 1 && buttonState != prevButtonState) {
+      generateSequence();
+      RGB(0,0,0);
+      delay(500);
+      print_sequence();
     }
-    
+    prevButtonState = buttonState;
   }
+  sequenceIndex = 0;
 }
+
 
 void setup() {
   pinMode(redPin, OUTPUT);
@@ -199,30 +192,30 @@ void loop() {
   }
 
   while (playing) {
-    //Serial.println(sequenceExists);
     if (sequenceExists == false) {
       buttonState = digitalRead(buttonPin);
       if (buttonState == 1 && buttonState != prevButtonState) {
-        Serial.println("I AM USELESS");
+        prevButtonState = buttonState;
         createSequence();
+
+        RGB(255, 255, 255);
+        delay(500);
+        RGB(0, 0, 0);
+
         sequenceHasBeenShown = false;
         sequenceExists = true;
         prevButtonState = 0;
       }
     }
     else {
-      
       if (sequenceHasBeenShown == false) {
         buttonState = digitalRead(buttonPin);
         if (buttonState == 1 && prevButtonState != buttonState) {
           sequenceHasBeenShown = true; 
           sequenceExists = false;
           playSequence();
-
           Serial.println(sequenceExists);
-          
         }
-        
         prevButtonState = buttonState;
       }
     }
