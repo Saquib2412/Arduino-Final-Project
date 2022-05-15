@@ -11,11 +11,11 @@ int buttonPin = 2;
 
 bool playing = false;
 bool sequenceExists = false;
-bool sequenceHasBeenShown = true;
+bool sequenceHasBeenShown = false;
 
 int prevButtonState = 0;
 int sequenceIndex = 0;
-int delayTime = 1000;
+int delayTime = 300;
 
 int buzzer = 8;
 
@@ -200,28 +200,35 @@ void loop() {
 
   while (playing) {
     //Serial.println(sequenceExists);
-    if (!sequenceExists) {
-      createSequence();
-      sequenceHasBeenShown = false;
-      sequenceExists = true;
-      prevButtonState = 0;
+    if (sequenceExists == false) {
+      buttonState = digitalRead(buttonPin);
+      if (buttonState == 1 && buttonState != prevButtonState) {
+        Serial.println("I AM USELESS");
+        createSequence();
+        sequenceHasBeenShown = false;
+        sequenceExists = true;
+        prevButtonState = 0;
+      }
     }
     else {
+      
       if (sequenceHasBeenShown == false) {
         buttonState = digitalRead(buttonPin);
         if (buttonState == 1 && prevButtonState != buttonState) {
-          playSequence();
+          sequenceHasBeenShown = true; 
           sequenceExists = false;
-          sequenceHasBeenShown = true;
+          playSequence();
+
+          Serial.println(sequenceExists);
           
         }
+        
         prevButtonState = buttonState;
       }
-      
+    }
 
-      if (prevButtonState != buttonState) {
-        prevButtonState = buttonState;
-      }
+    if (prevButtonState != buttonState) {
+      prevButtonState = buttonState;
     }
   }
 }
