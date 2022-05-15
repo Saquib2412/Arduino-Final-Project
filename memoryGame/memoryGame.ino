@@ -40,6 +40,7 @@ void RGB(int r, int g, int b) {
   analogWrite(bluePin, b);
 }
 
+// Read data from ultrasonic sensor
 int ultrasonicInput() {
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
@@ -179,7 +180,7 @@ void createSequence() {
     if (buttonState == 1 && buttonState != prevButtonState) {
       generateSequence();
       RGB(0,0,0);
-      delay(500); 
+      delay(300); 
     }
     prevButtonState = buttonState;
   }
