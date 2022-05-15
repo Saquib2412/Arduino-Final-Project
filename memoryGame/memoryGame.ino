@@ -6,27 +6,18 @@ String colors[3] = {"red", "green", "blue"};
 String sequence[5] = {};
 
 int knobPin = A0;
-
 int buttonPin = 2;
-
-int echoPin = 7;
 int trigPin = 6;
+int echoPin = 7;
+int buzzer = 8;
 
 bool playing = false;
 bool sequenceExists = false;
 bool sequenceHasBeenShown = false;
+int sequenceIndex = 0;
 
 int prevButtonState = 0;
-int sequenceIndex = 0;
-int delayTime = 500;
-
-int buzzer = 8;
-
-void print_sequence(){
-  for(int i = 0; i < 5; i++) {
-    Serial.println(sequence[i]);
-  }
-}
+int delayTime = 1000;
 
 String convertToString() {
   String data;
@@ -36,6 +27,7 @@ String convertToString() {
   return data;
 }
 
+// Take incoming data and convert to array for guessing
 void fillSequence(String data) {
   for (int i = 0; i < 5; i++) {
     //sequence[i] = data.strok(" ")[i]
@@ -46,6 +38,17 @@ void RGB(int r, int g, int b) {
   analogWrite(redPin, r);
   analogWrite(greenPin, g);
   analogWrite(bluePin, b);
+}
+
+int ultrasonicInput() {
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  long duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  int distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  return distance;
 }
 
 void playSequence() {
@@ -122,21 +125,19 @@ void liveView() {
 }
 
 void generateSequence() {
-  // Implement own way of making sequence
   String colorSelected;
   String color = sequence[sequenceIndex];
   bool selected = false;
-  int prevState = 0;
+  int prevButtonState = 0;
 
   while (!selected) {
-    int state = digitalRead(buttonPin);
+    int buttonState = digitalRead(buttonPin);
     int knobValue = analogRead(knobPin);
     
-    if (state == 1 && state != prevState) {
+    if (buttonState == 1 && buttonState != prevButtonState) {
       if (knobValue < 341) {
         colorSelected = "red";
         selected = true;
-        Serial.println(colorSelected);
 
         // Buzzer sound
         tone(buzzer, 1000);
@@ -146,8 +147,7 @@ void generateSequence() {
       else if (knobValue > 340 && knobValue < 681) {
         colorSelected = "green";
         selected = true;
-        Serial.println(colorSelected);
-
+      
         // Buzzer sound
         tone(buzzer, 1000);
         delay(100);
@@ -156,8 +156,7 @@ void generateSequence() {
       else {
         colorSelected = "blue";
         selected = true;
-        Serial.println(colorSelected);
-
+      
         // Buzzer sound
         tone(buzzer, 1000);
         delay(100);
@@ -167,7 +166,7 @@ void generateSequence() {
     sequence[sequenceIndex] = colorSelected;
     sequenceIndex++;
         
-    prevState = state;
+    prevButtonState = buttonState;
   }
 }
 
@@ -180,8 +179,7 @@ void createSequence() {
     if (buttonState == 1 && buttonState != prevButtonState) {
       generateSequence();
       RGB(0,0,0);
-      delay(500);
-      print_sequence();
+      delay(500); 
     }
     prevButtonState = buttonState;
   }
@@ -192,9 +190,8 @@ void guessSequence() {
   String colorSelected;
   String color = sequence[sequenceIndex];
   bool selected = false;
-  int prevState = 0;
-  Serial.println("I expect: " + color);
-
+  int prevButtonState = 0;
+  
   while (!selected) {
     int buttonState = digitalRead(buttonPin);
     int knobValue = analogRead(knobPin);
@@ -205,7 +202,6 @@ void guessSequence() {
       if (knobValue < 341) {
         colorSelected = "red";
         selected = true;
-        Serial.println(colorSelected);
 
         // Buzzer sound
         tone(buzzer, 1000);
@@ -215,8 +211,7 @@ void guessSequence() {
       else if (knobValue > 340 && knobValue < 681) {
         colorSelected = "green";
         selected = true;
-        Serial.println(colorSelected);
-
+        
         // Buzzer sound
         tone(buzzer, 1000);
         delay(100);
@@ -225,8 +220,7 @@ void guessSequence() {
       else {
         colorSelected = "blue";
         selected = true;
-        Serial.println(colorSelected);
-
+        
         // Buzzer sound
         tone(buzzer, 1000);
         delay(100);
@@ -239,7 +233,7 @@ void guessSequence() {
   if (colorSelected == color) {
     sequenceIndex++;
     RGB(0, 0, 0);
-    delay(1000);
+    delay(300);
 
     if (sequenceIndex == 5) {
       sequenceIndex = 0;
@@ -249,8 +243,8 @@ void guessSequence() {
       playWin();
       sequenceIndex = 0;
       sequenceHasBeenShown = false;
-      delay(2000);
       sequenceExists = false;
+      delay(2000);
     }
   }
   else {
@@ -258,33 +252,21 @@ void guessSequence() {
 
     // Same code block as when winning, may need to change if a score system is implemented
     sequenceIndex = 0;
-    delayTime = 1000;
-
     sequenceHasBeenShown = false;
     sequenceExists = false;
+    delayTime = 1000;
     delay(2000);
   }
-}
-
-int ultrasonicInput() {
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  long duration = pulseIn(echoPin, HIGH);
-  // Calculating the distance
-  int distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
-  return distance;
 }
 
 void setup() {
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
   pinMode(bluePin, OUTPUT);
+  pinMode(buttonPin, INPUT);
   pinMode(buzzer, OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  pinMode(buttonPin, INPUT);
 
   randomSeed(analogRead(knobPin));
   Serial.begin(9600);
@@ -293,6 +275,7 @@ void setup() {
 
 void loop() {
   int buttonState = digitalRead(buttonPin);
+
   if (playing == false && buttonState == 1 && buttonState != prevButtonState) {
     playing = true;
   }
@@ -309,6 +292,27 @@ void loop() {
         RGB(0, 0, 0);
         delay(500);
 
+        // TODO: Here we should send the data
+        bool sent = false;
+
+        while (!sent) {
+          int threshold = 3;
+          int distance = ultrasonicInput();
+
+          if (distance <= threshold) {
+            String data = convertToString();
+            Serial.println(data);
+            sent = true;
+
+            tone(buzzer, 1175);
+            delay(200);
+            tone(buzzer, 1319);
+            delay(500);
+            tone(buzzer, 1047);
+            delay(200);
+            noTone(buzzer);
+          }
+        }
         sequenceHasBeenShown = false;
         sequenceExists = true;
         prevButtonState = 0;
@@ -318,12 +322,8 @@ void loop() {
       if (sequenceHasBeenShown == false) {
         buttonState = digitalRead(buttonPin);
         if (buttonState == 1 && prevButtonState != buttonState) {
-          sequenceHasBeenShown = true; 
-          //sequenceExists = false;
+          sequenceHasBeenShown = true;
           playSequence();
-          
-        
-          Serial.println(sequenceExists);
         }
         prevButtonState = buttonState;
       }
