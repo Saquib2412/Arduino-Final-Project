@@ -18,6 +18,7 @@ int sequenceIndex = 0;
 
 int prevButtonState = 0;
 int delayTime = 1000;
+int score = 0;
 
 String convertToString() {
   String data;
@@ -35,16 +36,15 @@ String convertToString() {
 // SOURCE: https://forum.arduino.cc/t/how-to-split-a-string-with-space-and-store-the-items-in-array/888813
 void fillSequence(String data) {
   int i = 0;
-  while (data.length() > 0)
-  {
+  while (data.length() > 0) {
+  
     int index = data.indexOf(' ');
-    if (index == -1) // No space found
-    {
+    if (index == -1) {// No space found
+    
       sequence[i++] = data;
       break;
     }
-    else
-    {
+    else {
       sequence[i++] = data.substring(0, index);
       data = data.substring(index+1);
     }
@@ -256,7 +256,8 @@ void guessSequence() {
     if (sequenceIndex == 5) {
       sequenceIndex = 0;
       sequenceExists = false;
-      delayTime -= 50;
+      // delayTime -= 50;
+      score++;
 
       playWin();
       sequenceIndex = 0;
@@ -273,6 +274,7 @@ void guessSequence() {
     sequenceHasBeenShown = false;
     sequenceExists = false;
     delayTime = 1000;
+    score = 0;
     delay(2000);
   }
 }
@@ -289,9 +291,7 @@ void setup() {
   randomSeed(analogRead(knobPin));
   Serial.begin(9600);
   Serial.println("Starting");
-  String seq = "red blue red green green";
-  fillSequence(seq);
-  playSequence();
+ 
 }
 
 void loop() {
