@@ -22,15 +22,32 @@ int delayTime = 1000;
 String convertToString() {
   String data;
   for (int i = 0; i < 5; i++) {
-    data += sequence[i] + " ";
+    if (i == 4) {
+      data += sequence[i];
+    } else {
+      data += sequence[i] + " ";
+    }
   }
   return data;
 }
 
 // Take incoming data and convert to array for guessing
+// SOURCE: https://forum.arduino.cc/t/how-to-split-a-string-with-space-and-store-the-items-in-array/888813
 void fillSequence(String data) {
-  for (int i = 0; i < 5; i++) {
-    //sequence[i] = data.strok(" ")[i]
+  int i = 0;
+  while (data.length() > 0)
+  {
+    int index = data.indexOf(' ');
+    if (index == -1) // No space found
+    {
+      sequence[i++] = data;
+      break;
+    }
+    else
+    {
+      sequence[i++] = data.substring(0, index);
+      data = data.substring(index+1);
+    }
   }
 }
 
@@ -272,6 +289,9 @@ void setup() {
   randomSeed(analogRead(knobPin));
   Serial.begin(9600);
   Serial.println("Starting");
+  String seq = "red blue red green green";
+  fillSequence(seq);
+  playSequence();
 }
 
 void loop() {
