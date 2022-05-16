@@ -109,6 +109,8 @@ void playWin() {
     
     RGB(0, 0, 0);
     delay(300);
+
+    Serial.println("CORRECT");
   }
 }
 
@@ -125,6 +127,8 @@ void playLose() {
     
     RGB(0, 0, 0);
     delay(300);
+
+    Serial.println("INCORRECT");
   }
 }
 
