@@ -4,7 +4,7 @@ int bluePin = 9;
 
 String colors[3] = {"red", "green", "blue"};
 String sequence[5] = {};
-
+// test
 int knobPin = A0;
 int buttonPin = 2;
 int trigPin = 6;
